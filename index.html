@@ -1,209 +1,173 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF‑8">
-<meta name="viewport" content="width=device‑width, initial‑scale=1.0">
-<title>Timestamp Discord Style r.3v.fi</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Discord Timestamp Generator</title>
+<script src="https://cdn.tailwindcss.com"></script>
 <style>
+  /* Global gradient background */
   body {
-    font-family: Arial, sans-serif;
-    background: #1a1a2e;
-    color: white;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 2rem;
+    background: linear-gradient(135deg, #1f1f2e, #2a2a3f, #1f1f2e);
   }
 
+  /* Styled container */
   .container {
-    background: #22223b;
+    background: linear-gradient(145deg, #2b2b3f, #3a3a57);
     padding: 2rem;
-    border-radius: 1rem;
-    width: 100%;
-    max-width: 450px;
+    border-radius: 1.5rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
   }
 
-  h1 { text-align: center; margin-bottom: 1rem; }
-
-  /* Calendrier */
-  .calendar {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 5px;
-    margin-bottom: 1rem;
-  }
-
-  .calendar div {
-    padding: 8px;
-    text-align: center;
-    cursor: pointer;
-    background: #362e6d;
-    border-radius: 6px;
-    transition: 0.2s;
-  }
-  .calendar div:hover { background: #4a47a3; }
-  .calendar .selected { background: #ff6b6b; }
-
-  .nav {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 0.5rem;
-  }
-  .nav button {
-    background: #4a47a3;
+  /* Inputs / select style */
+  input, select {
+    background: linear-gradient(135deg, #3b3b55, #4b4b72);
     border: none;
-    padding: 4px 8px;
-    border-radius: 6px;
-    cursor: pointer;
-  }
-
-  /* Horloge */
-  .clock {
-    width: 260px;
-    height: 260px;
-    border: 4px solid #4a47a3;
-    border-radius: 50%;
-    position: relative;
-    margin: auto;
-    margin-bottom: 1rem;
-  }
-  .hourHand, .minuteHand {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    background: #ff6b6b;
-    transform-origin: bottom;
-    pointer-events: none;
-  }
-  .hourHand { width: 6px; height: 60px; }
-  .minuteHand { width: 4px; height: 90px; background: #f7d794; }
-
-  .clockNumbers {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-  }
-  .clockNumbers div {
-    position: absolute;
-    width: 20px;
-    text-align: center;
-    font-size: 14px;
-    font-weight: bold;
-  }
-
-  /* Result */
-  #result {
-    width: 100%;
-    padding: 0.5rem;
-    margin-bottom: 0.5rem;
-    border-radius: 0.5rem;
-    border: none;
-    background: #362e6d;
+    outline: none;
     color: white;
-    font-family: monospace;
-    text-align: center;
+    padding: 0.5rem;
+    border-radius: 0.75rem;
+    transition: all 0.3s ease;
+  }
+  input:focus, select:focus {
+    background: linear-gradient(135deg, #5a5ac0, #7b7bd0);
+    box-shadow: 0 0 10px rgba(123,123,208,0.7);
+  }
+
+  /* Buttons gradient */
+  .btn-gradient {
+    background: linear-gradient(90deg, #ff6a88, #ff99ac);
+    color: white;
+    font-weight: bold;
+    padding: 0.5rem 1rem;
+    border-radius: 0.75rem;
+    transition: all 0.3s ease;
+  }
+  .btn-gradient:hover {
+    background: linear-gradient(90deg, #ff99ac, #ff6a88);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255,105,136,0.5);
+  }
+
+  /* Toast container */
+  #toast-container {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 0.5rem;
+    z-index: 1000;
+  }
+
+  .toast {
+    background: linear-gradient(90deg, #22c55e, #4ade80);
+    color: white;
+    padding: 1rem 1.5rem;
+    border-radius: 0.75rem;
+    font-weight: bold;
+    font-family: sans-serif;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    min-width: 220px;
+  }
+  .toast.show {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .toast .progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 4px;
+    background-color: white;
+    width: 100%;
+    transform-origin: right;
+    animation: shrink 5s linear forwards;
+  }
+  @keyframes shrink {
+    from { transform: scaleX(1); }
+    to { transform: scaleX(0); }
   }
 </style>
 </head>
-<body>
+<body class="flex items-center justify-center min-h-screen text-white">
 
-<div class="container">
-  <h1>Discord Timestamp</h1>
+<div class="container w-full max-w-md">
+  <h1 class="text-2xl font-bold mb-6 text-center">⏱ Discord Timestamp</h1>
 
-  <!-- Calendrier -->
-  <div class="nav">
-    <button id="prevMonth">&lt;</button>
-    <span id="monthYear"></span>
-    <button id="nextMonth">&gt;</button>
-  </div>
-  <div class="calendar" id="calendar"></div>
+  <label class="block mb-2">Choisir la date :</label>
+  <input id="date" type="date" class="w-full mb-4"/>
 
-  <!-- Horloge -->
-  <div class="clock" id="clock">
-    <div class="clockNumbers"></div>
-    <div class="hourHand"></div>
-    <div class="minuteHand"></div>
-  </div>
+  <label class="block mb-2">Choisir l'heure :</label>
+  <input id="time" type="time" class="w-full mb-4"/>
 
-  <button onclick="generateTimestamp()">Générer</button>
-  <input id="result" readonly>
+  <label class="block mb-2">Format :</label>
+  <select id="format" class="w-full mb-4">
+    <option value="t">Court temps (t)</option>
+    <option value="T">Long temps (T)</option>
+    <option value="d">Date courte (d)</option>
+    <option value="D">Date longue (D)</option>
+    <option value="f" selected>Date + temps complet (f)</option>
+    <option value="F">Date + temps complet long (F)</option>
+    <option value="R">Relatif (R)</option>
+  </select>
+
+  <button onclick="generateTimestamp()" class="w-full btn-gradient mb-4">Générer</button>
+
+  <input id="result" type="text" readonly class="w-full p-2 rounded bg-gray-700 focus:outline-none text-center font-mono mb-2"/>
+  <button onclick="copyResult()" class="w-full btn-gradient">📋 Copier</button>
 </div>
 
+<div id="toast-container"></div>
+
 <script>
-let selectedDate = new Date();
-let selectedHour = selectedDate.getHours();
-let selectedMinute = selectedDate.getMinutes();
+  function generateTimestamp() {
+    const date = document.getElementById('date').value;
+    const time = document.getElementById('time').value;
+    const format = document.getElementById('format').value;
 
-// Render calendar
-function renderCalendar() {
-  const cal = document.getElementById('calendar');
-  cal.innerHTML='';
-  const year = selectedDate.getFullYear();
-  const month = selectedDate.getMonth();
-  const firstDay = new Date(year, month, 1).getDay();
-  const daysInMonth = new Date(year, month+1, 0).getDate();
+    if (!date || !time) {
+      showToast("Veuillez choisir la date et l'heure !");
+      return;
+    }
 
-  document.getElementById('monthYear').textContent =
-    selectedDate.toLocaleString('default',{ month:'long', year:'numeric' });
+    const datetimeStr = `${date}T${time}:00`;
+    const unixTimestamp = Math.floor(new Date(datetimeStr).getTime() / 1000);
+    const discordTimestamp = `<t:${unixTimestamp}:${format}>`;
+    document.getElementById('result').value = discordTimestamp;
 
-  for(let i=0;i<firstDay;i++) cal.innerHTML += '<div></div>';
-  for(let d=1; d<=daysInMonth; d++){
-    const cell = document.createElement('div');
-    cell.textContent = d;
-    if(d === selectedDate.getDate()) cell.classList.add('selected');
-    cell.onclick = ()=>{ selectedDate.setDate(d); renderCalendar(); };
-    cal.appendChild(cell);
+    showToast("Timestamp généré !");
   }
-}
 
-document.getElementById('prevMonth').onclick = ()=>{ selectedDate.setMonth(selectedDate.getMonth()-1); renderCalendar(); };
-document.getElementById('nextMonth').onclick = ()=>{ selectedDate.setMonth(selectedDate.getMonth()+1); renderCalendar(); };
-renderCalendar();
+  function copyResult() {
+    const result = document.getElementById('result');
+    result.select();
+    navigator.clipboard.writeText(result.value);
+    showToast("Timestamp copié !");
+  }
 
-// Clock visuals
-const clock = document.getElementById('clock');
-const hourHand = document.querySelector('.hourHand');
-const minuteHand = document.querySelector('.minuteHand');
-const clockNumbers = document.querySelector('.clockNumbers');
+  function showToast(message) {
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.className = 'toast show';
+    toast.textContent = message;
 
-// place numbers
-for(let i=1; i<=12; i++){
-  const num = document.createElement('div');
-  const angle = (i/12)*360;
-  const rad = Math.PI * angle/180;
-  num.style.top = `${50 - Math.cos(rad)*40}%`;
-  num.style.left= `${50 + Math.sin(rad)*40}%`;
-  num.textContent = i;
-  clockNumbers.appendChild(num);
-}
+    const progress = document.createElement('div');
+    progress.className = 'progress';
+    toast.appendChild(progress);
 
-function updateHands() {
-  hourHand.style.transform = `rotate(${selectedHour*30 + selectedMinute*0.5}deg) translate(-50%,-100%)`;
-  minuteHand.style.transform = `rotate(${selectedMinute*6}deg) translate(-50%,-100%)`;
-}
-updateHands();
+    container.appendChild(toast);
 
-// Click on clock to set time
-clock.onclick = (e) => {
-  const rect = clock.getBoundingClientRect();
-  const x = e.clientX - (rect.left + rect.width/2);
-  const y = e.clientY - (rect.top + rect.height/2);
-  const angle = Math.atan2(y, x) * (180 / Math.PI) + 90;
-  const normalized = (angle<0 ? angle+360 : angle);
-  selectedHour = Math.floor(normalized / 30);
-  selectedMinute = Math.floor((normalized % 30)*2);
-  updateHands();
-};
-
-// Generate timestamp
-function generateTimestamp() {
-  selectedDate.setHours(selectedHour);
-  selectedDate.setMinutes(selectedMinute);
-  const unix = Math.floor(selectedDate.getTime()/1000);
-  document.getElementById('result').value = `<t:${unix}:f>`;
-}
-
+    setTimeout(() => {
+      toast.classList.remove('show');
+      setTimeout(() => toast.remove(), 300);
+    }, 5000);
+  }
 </script>
 
 </body>
