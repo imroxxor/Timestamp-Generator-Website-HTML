@@ -1,53 +1,134 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Discord Timestamp Generator</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Discord Timestamp Generator</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  /* Toast container */
+  #toast {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    background-color: #22c55e; /* vert */
+    color: white;
+    padding: 1rem 1.5rem;
+    border-radius: 0.75rem;
+    font-weight: bold;
+    font-family: sans-serif;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    z-index: 1000;
+    overflow: hidden;
+    min-width: 200px;
+  }
+
+  /* Toast visible */
+  #toast.show {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Progress bar inside toast */
+  #toast .progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 4px;
+    background-color: white;
+    width: 100%;
+    transform-origin: right;
+    animation: shrink 5s linear forwards;
+  }
+
+  @keyframes shrink {
+    from { transform: scaleX(1); }
+    to { transform: scaleX(0); }
+  }
+</style>
 </head>
 <body class="bg-gray-900 text-white flex items-center justify-center min-h-screen">
 
-  <div class="bg-gray-800 p-6 rounded-2xl shadow-xl w-full max-w-md">
-    <h1 class="text-2xl font-bold mb-4 text-center">⏱ Discord Timestamp</h1>
+<div class="bg-gray-800 p-6 rounded-2xl shadow-xl w-full max-w-md">
+  <h1 class="text-2xl font-bold mb-4 text-center">⏱ Discord Timestamp</h1>
 
-    <label class="block mb-2">Choisir la date et l'heure :</label>
-    <input id="datetime" type="datetime-local" class="w-full mb-4 p-2 rounded bg-gray-700 focus:outline-none"/>
+  <!-- Choix de la date -->
+  <label class="block mb-2">Choisir la date :</label>
+  <input id="date" type="date" class="w-full mb-4 p-2 rounded bg-gray-700 focus:outline-none"/>
 
-    <label class="block mb-2">Format :</label>
-    <select id="format" class="w-full mb-4 p-2 rounded bg-gray-700 focus:outline-none">
-      <option value="t">Court temps (t)</option>
-      <option value="T">Long temps (T)</option>
-      <option value="d">Date courte (d)</option>
-      <option value="D">Date longue (D)</option>
-      <option value="f" selected>Date + temps complet (f)</option>
-      <option value="F">Date + temps complet long (F)</option>
-      <option value="R">Relatif (R)</option>
-    </select>
+  <!-- Choix de l'heure -->
+  <label class="block mb-2">Choisir l'heure :</label>
+  <input id="time" type="time" class="w-full mb-4 p-2 rounded bg-gray-700 focus:outline-none"/>
 
-    <button onclick="generateTimestamp()" class="w-full bg-blue-600 py-2 rounded hover:bg-blue-700 mb-4">Générer</button>
+  <!-- Choix du format Discord -->
+  <label class="block mb-2">Format :</label>
+  <select id="format" class="w-full mb-4 p-2 rounded bg-gray-700 focus:outline-none">
+    <option value="t">Court temps (t)</option>
+    <option value="T">Long temps (T)</option>
+    <option value="d">Date courte (d)</option>
+    <option value="D">Date longue (D)</option>
+    <option value="f" selected>Date + temps complet (f)</option>
+    <option value="F">Date + temps complet long (F)</option>
+    <option value="R">Relatif (R)</option>
+  </select>
 
-    <input id="result" type="text" readonly class="w-full p-2 rounded bg-gray-700 focus:outline-none text-center font-mono"/>
-    <button onclick="copyResult()" class="w-full bg-green-600 py-2 rounded hover:bg-green-700 mt-2">📋 Copier</button>
-  </div>
+  <!-- Bouton générer -->
+  <button onclick="generateTimestamp()" class="w-full bg-blue-600 py-2 rounded hover:bg-blue-700 mb-4">Générer</button>
 
-  <script>
-    function generateTimestamp() {
-      const datetime = document.getElementById('datetime').value;
-      const format = document.getElementById('format').value;
-      if (!datetime) return;
+  <!-- Champ résultat -->
+  <input id="result" type="text" readonly class="w-full p-2 rounded bg-gray-700 focus:outline-none text-center font-mono"/>
+  <button onclick="copyResult()" class="w-full bg-green-600 py-2 rounded hover:bg-green-700 mt-2">📋 Copier</button>
+</div>
 
-      const unixTimestamp = Math.floor(new Date(datetime).getTime() / 1000);
-      const discordTimestamp = `<t:${unixTimestamp}:${format}>`;
-      document.getElementById('result').value = discordTimestamp;
+<!-- Toast notification -->
+<div id="toast"><span id="toast-message"></span><div class="progress"></div></div>
+
+<script>
+  function generateTimestamp() {
+    const date = document.getElementById('date').value;
+    const time = document.getElementById('time').value;
+    const format = document.getElementById('format').value;
+
+    if (!date || !time) {
+      showToast("Veuillez choisir la date et l'heure !");
+      return;
     }
 
-    function copyResult() {
-      const result = document.getElementById('result');
-      result.select();
-      navigator.clipboard.writeText(result.value);
-      alert('Timestamp copié !');
-    }
-  </script>
+    const datetimeStr = `${date}T${time}:00`;
+    const unixTimestamp = Math.floor(new Date(datetimeStr).getTime() / 1000);
+    const discordTimestamp = `<t:${unixTimestamp}:${format}>`;
+    document.getElementById('result').value = discordTimestamp;
+
+    showToast("Timestamp généré !");
+  }
+
+  function copyResult() {
+    const result = document.getElementById('result');
+    result.select();
+    navigator.clipboard.writeText(result.value);
+    showToast("Timestamp copié !");
+  }
+
+  function showToast(message) {
+    const toast = document.getElementById('toast');
+    const toastMessage = document.getElementById('toast-message');
+    toastMessage.textContent = message;
+    toast.classList.add('show');
+
+    // Reset animation
+    toast.querySelector('.progress').style.animation = 'none';
+    void toast.querySelector('.progress').offsetWidth; // trigger reflow
+    toast.querySelector('.progress').style.animation = 'shrink 5s linear forwards';
+
+    // Cacher le toast après 5s
+    setTimeout(() => {
+      toast.classList.remove('show');
+    }, 5000);
+  }
+</script>
+
 </body>
 </html>
