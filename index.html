@@ -4,52 +4,95 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Discord Timestamp Generator</title>
-<script src="https://cdn.tailwindcss.com"></script>
 <style>
-  /* Global gradient background */
-  body {
-    background: linear-gradient(135deg, #1f1f2e, #2a2a3f, #1f1f2e);
+  /* --- VARIABLES CSS POUR FACILITER LE STYLE --- */
+  :root {
+    --primary-bg: linear-gradient(145deg, #2b2b3f, #3a3a57);
+    --body-bg: linear-gradient(135deg, #1f1f2e, #2a2a3f, #1f1f2e);
+    --input-bg: linear-gradient(135deg, #3b3b55, #4b4b72);
+    --input-focus-bg: linear-gradient(135deg, #5a5ac0, #7b7bd0);
+    --button-bg: linear-gradient(90deg, #ff6a88, #ff99ac);
+    --button-hover-bg: linear-gradient(90deg, #ff99ac, #ff6a88);
+    --toast-bg: linear-gradient(90deg, #22c55e, #4ade80);
+    --font-main: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   }
 
-  /* Styled container */
+  /* --- BODY & CONTAINER --- */
+  body {
+    margin: 0;
+    font-family: var(--font-main);
+    background: var(--body-bg);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    color: white;
+  }
+
   .container {
-    background: linear-gradient(145deg, #2b2b3f, #3a3a57);
+    background: var(--primary-bg);
     padding: 2rem;
     border-radius: 1.5rem;
     box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    width: 100%;
+    max-width: 400px;
   }
 
-  /* Inputs / select style */
+  h1 {
+    text-align: center;
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+  }
+
+  /* --- INPUTS & SELECT --- */
   input, select {
-    background: linear-gradient(135deg, #3b3b55, #4b4b72);
-    border: none;
-    outline: none;
-    color: white;
+    width: 100%;
     padding: 0.5rem;
     border-radius: 0.75rem;
+    border: none;
+    outline: none;
+    background: var(--input-bg);
+    color: white;
+    margin-bottom: 1rem;
     transition: all 0.3s ease;
+    font-size: 1rem;
   }
+
   input:focus, select:focus {
-    background: linear-gradient(135deg, #5a5ac0, #7b7bd0);
+    background: var(--input-focus-bg);
     box-shadow: 0 0 10px rgba(123,123,208,0.7);
   }
 
-  /* Buttons gradient */
-  .btn-gradient {
-    background: linear-gradient(90deg, #ff6a88, #ff99ac);
-    color: white;
-    font-weight: bold;
-    padding: 0.5rem 1rem;
+  /* --- BUTTONS --- */
+  .btn {
+    width: 100%;
+    padding: 0.6rem 1rem;
     border-radius: 0.75rem;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+    background: var(--button-bg);
+    color: white;
+    font-size: 1rem;
     transition: all 0.3s ease;
+    margin-bottom: 1rem;
   }
-  .btn-gradient:hover {
-    background: linear-gradient(90deg, #ff99ac, #ff6a88);
+
+  .btn:hover {
+    background: var(--button-hover-bg);
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(255,105,136,0.5);
   }
 
-  /* Toast container */
+  /* --- RESULT INPUT --- */
+  #result {
+    text-align: center;
+    font-family: monospace;
+    margin-bottom: 1rem;
+    background: var(--input-bg);
+  }
+
+  /* --- TOASTS --- */
   #toast-container {
     position: fixed;
     bottom: 2rem;
@@ -61,53 +104,53 @@
   }
 
   .toast {
-    background: linear-gradient(90deg, #22c55e, #4ade80);
-    color: white;
-    padding: 1rem 1.5rem;
-    border-radius: 0.75rem;
-    font-weight: bold;
-    font-family: sans-serif;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    opacity: 0;
-    transform: translateY(20px);
-    transition: opacity 0.3s ease, transform 0.3s ease;
     position: relative;
     overflow: hidden;
     min-width: 220px;
+    background: var(--toast-bg);
+    padding: 1rem 1.5rem;
+    border-radius: 0.75rem;
+    font-weight: bold;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
   }
+
   .toast.show {
     opacity: 1;
     transform: translateY(0);
   }
+
   .toast .progress {
     position: absolute;
     bottom: 0;
     left: 0;
     height: 4px;
-    background-color: white;
+    background: white;
     width: 100%;
     transform-origin: right;
     animation: shrink 5s linear forwards;
   }
+
   @keyframes shrink {
     from { transform: scaleX(1); }
     to { transform: scaleX(0); }
   }
 </style>
 </head>
-<body class="flex items-center justify-center min-h-screen text-white">
+<body>
 
-<div class="container w-full max-w-md">
-  <h1 class="text-2xl font-bold mb-6 text-center">⏱ Discord Timestamp</h1>
+<div class="container">
+  <h1>⏱ Discord Timestamp</h1>
 
-  <label class="block mb-2">Choisir la date :</label>
-  <input id="date" type="date" class="w-full mb-4"/>
+  <label>Choisir la date :</label>
+  <input id="date" type="date"/>
 
-  <label class="block mb-2">Choisir l'heure :</label>
-  <input id="time" type="time" class="w-full mb-4"/>
+  <label>Choisir l'heure :</label>
+  <input id="time" type="time"/>
 
-  <label class="block mb-2">Format :</label>
-  <select id="format" class="w-full mb-4">
+  <label>Format :</label>
+  <select id="format">
     <option value="t">Court temps (t)</option>
     <option value="T">Long temps (T)</option>
     <option value="d">Date courte (d)</option>
@@ -117,57 +160,57 @@
     <option value="R">Relatif (R)</option>
   </select>
 
-  <button onclick="generateTimestamp()" class="w-full btn-gradient mb-4">Générer</button>
+  <button onclick="generateTimestamp()" class="btn">Générer</button>
 
-  <input id="result" type="text" readonly class="w-full p-2 rounded bg-gray-700 focus:outline-none text-center font-mono mb-2"/>
-  <button onclick="copyResult()" class="w-full btn-gradient">📋 Copier</button>
+  <input id="result" type="text" readonly/>
+  <button onclick="copyResult()" class="btn">📋 Copier</button>
 </div>
 
 <div id="toast-container"></div>
 
 <script>
-  function generateTimestamp() {
-    const date = document.getElementById('date').value;
-    const time = document.getElementById('time').value;
-    const format = document.getElementById('format').value;
+function generateTimestamp() {
+  const date = document.getElementById('date').value;
+  const time = document.getElementById('time').value;
+  const format = document.getElementById('format').value;
 
-    if (!date || !time) {
-      showToast("Veuillez choisir la date et l'heure !");
-      return;
-    }
-
-    const datetimeStr = `${date}T${time}:00`;
-    const unixTimestamp = Math.floor(new Date(datetimeStr).getTime() / 1000);
-    const discordTimestamp = `<t:${unixTimestamp}:${format}>`;
-    document.getElementById('result').value = discordTimestamp;
-
-    showToast("Timestamp généré !");
+  if (!date || !time) {
+    showToast("Veuillez choisir la date et l'heure !");
+    return;
   }
 
-  function copyResult() {
-    const result = document.getElementById('result');
-    result.select();
-    navigator.clipboard.writeText(result.value);
-    showToast("Timestamp copié !");
-  }
+  const datetimeStr = `${date}T${time}:00`;
+  const unixTimestamp = Math.floor(new Date(datetimeStr).getTime() / 1000);
+  const discordTimestamp = `<t:${unixTimestamp}:${format}>`;
+  document.getElementById('result').value = discordTimestamp;
 
-  function showToast(message) {
-    const container = document.getElementById('toast-container');
-    const toast = document.createElement('div');
-    toast.className = 'toast show';
-    toast.textContent = message;
+  showToast("Timestamp généré !");
+}
 
-    const progress = document.createElement('div');
-    progress.className = 'progress';
-    toast.appendChild(progress);
+function copyResult() {
+  const result = document.getElementById('result');
+  result.select();
+  navigator.clipboard.writeText(result.value);
+  showToast("Timestamp copié !");
+}
 
-    container.appendChild(toast);
+function showToast(message) {
+  const container = document.getElementById('toast-container');
+  const toast = document.createElement('div');
+  toast.className = 'toast show';
+  toast.textContent = message;
 
-    setTimeout(() => {
-      toast.classList.remove('show');
-      setTimeout(() => toast.remove(), 300);
-    }, 5000);
-  }
+  const progress = document.createElement('div');
+  progress.className = 'progress';
+  toast.appendChild(progress);
+
+  container.appendChild(toast);
+
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => toast.remove(), 300);
+  }, 5000);
+}
 </script>
 
 </body>
