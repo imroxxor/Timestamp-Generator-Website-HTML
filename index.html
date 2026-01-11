@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Discord Timestamp Generator</title>
+<title>Timestamp Discord</title>
 <style>
   :root {
     --primary-bg: linear-gradient(145deg, #2b2b3f, #3a3a57);
-    --body-bg: linear-gradient(135deg, #1f1f2e, #2a2a3f, #1f1f2e);
+    --body-bg: linear-gradient(135deg, #1f1f2e, #2a2a3f);
     --button-bg: linear-gradient(90deg, #ff6a88, #ff99ac);
     --button-hover-bg: linear-gradient(90deg, #ff99ac, #ff6a88);
     --toast-bg: linear-gradient(90deg, #22c55e, #4ade80);
@@ -32,127 +32,65 @@
     box-shadow: 0 10px 30px rgba(0,0,0,0.5);
     width: 100%;
     max-width: 400px;
-  }
-
-  h1 {
     text-align: center;
-    font-size: 2rem;
-    margin-bottom: 1.5rem;
   }
 
-  .picker-group {
-    display: flex;
-    gap: 0.5rem;
-    margin-bottom: 1rem;
-  }
+  h1 { margin-bottom: 1rem; }
 
-  .custom-select {
-    flex: 1;
-    background: #3b3b55;
-    border-radius: 0.75rem;
-    padding: 0.5rem;
-    color: white;
+  button {
     cursor: pointer;
-    position: relative;
-    user-select: none;
-  }
-
-  .custom-select:hover { background: #4b4b72; }
-
-  .custom-options {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    background: #3b3b55;
-    border-radius: 0.75rem;
-    max-height: 150px;
-    overflow-y: auto;
-    display: none;
-    z-index: 10;
-    margin-top: 2px;
-  }
-
-  .custom-options div {
-    padding: 0.5rem;
-    cursor: pointer;
-  }
-  .custom-options div:hover {
-    background: #5a5ac0;
-  }
-
-  .btn {
-    width: 100%;
-    padding: 0.6rem 1rem;
-    border-radius: 0.75rem;
     border: none;
+    border-radius: 0.75rem;
+    padding: 0.5rem 1rem;
     font-weight: bold;
-    cursor: pointer;
     background: var(--button-bg);
     color: white;
-    font-size: 1rem;
-    transition: all 0.3s ease;
-    margin-bottom: 1rem;
+    transition: all 0.3s;
+    margin-top: 1rem;
   }
-  .btn:hover {
-    background: var(--button-hover-bg);
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(255,105,136,0.5);
-  }
+  button:hover { background: var(--button-hover-bg); transform: translateY(-2px); }
 
   #result {
-    text-align: center;
-    font-family: monospace;
-    margin-bottom: 1rem;
-    background: #3b3b55;
+    margin-top: 1rem;
+    width: 100%;
     padding: 0.5rem;
     border-radius: 0.75rem;
+    background: #3b3b55;
+    font-family: monospace;
+    text-align: center;
   }
 
   /* --- TOASTS --- */
-  #toast-container {
-    position: fixed;
-    bottom: 2rem;
-    right: 2rem;
-    display: flex;
-    flex-direction: column-reverse;
-    gap: 0.5rem;
-    z-index: 1000;
-  }
+  #toast-container { position: fixed; bottom: 2rem; right: 2rem; display: flex; flex-direction: column-reverse; gap: 0.5rem; z-index:1000;}
+  .toast { position:relative; overflow:hidden; min-width:200px; padding:1rem; border-radius:.75rem; background:var(--toast-bg); opacity:0; transform:translateY(20px); transition:opacity .3s, transform .3s;}
+  .toast.show { opacity:1; transform:translateY(0);}
+  .toast .progress { position:absolute; bottom:0; left:0; height:4px; background:white; width:100%; transform-origin:right; animation: shrink 5s linear forwards;}
+  @keyframes shrink { from {transform:scaleX(1);} to {transform:scaleX(0);} }
 
-  .toast {
+  /* --- DATE PICKER STYLE --- */
+  .calendar { display:grid; grid-template-columns:repeat(7,1fr); gap:0.25rem; margin-bottom:1rem; }
+  .calendar div { padding:.5rem; background:#3b3b55; border-radius:.5rem; cursor:pointer; transition:.2s; }
+  .calendar div:hover { background:#5a5ac0; }
+  .calendar .selected { background:#ff6a88; }
+
+  .month-nav { display:flex; justify-content:space-between; margin-bottom:0.5rem; }
+
+  /* --- CLOCK STYLE --- */
+  .clock {
     position: relative;
-    overflow: hidden;
-    min-width: 220px;
-    background: var(--toast-bg);
-    padding: 1rem 1.5rem;
-    border-radius: 0.75rem;
-    font-weight: bold;
-    opacity: 0;
-    transform: translateY(20px);
-    transition: opacity 0.3s ease, transform 0.3s ease;
+    width: 200px; height: 200px;
+    margin: 0 auto 1rem;
+    border-radius: 50%;
+    background:#3b3b55;
   }
-
-  .toast.show {
-    opacity: 1;
-    transform: translateY(0);
-  }
-
-  .toast .progress {
+  .clock .hand {
     position: absolute;
-    bottom: 0;
-    left: 0;
-    height: 4px;
-    background: white;
-    width: 100%;
-    transform-origin: right;
-    animation: shrink 5s linear forwards;
+    width:2px; height:80px; background:white;
+    top:50%; left:50%;
+    transform-origin:bottom center;
+    transform:rotate(0deg) translateY(-50%);
   }
-
-  @keyframes shrink {
-    from { transform: scaleX(1); }
-    to { transform: scaleX(0); }
-  }
+  .clock .center { width:10px; height:10px; background:white; border-radius:50%; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);}
 </style>
 </head>
 <body>
@@ -160,128 +98,76 @@
 <div class="container">
   <h1>⏱ Discord Timestamp</h1>
 
-  <div class="picker-group">
-    <div class="custom-select" id="day-select">Jour
-      <div class="custom-options" id="day-options"></div>
-    </div>
-    <div class="custom-select" id="month-select">Mois
-      <div class="custom-options" id="month-options"></div>
-    </div>
-    <div class="custom-select" id="year-select">Année
-      <div class="custom-options" id="year-options"></div>
-    </div>
+  <!-- DATE PICKER -->
+  <div class="month-nav">
+    <button id="prev-month">&lt;</button>
+    <span id="month-year"></span>
+    <button id="next-month">&gt;</button>
   </div>
+  <div class="calendar" id="calendar"></div>
 
-  <div class="picker-group">
-    <div class="custom-select" id="hour-select">Heure
-      <div class="custom-options" id="hour-options"></div>
-    </div>
-    <div class="custom-select" id="minute-select">Minute
-      <div class="custom-options" id="minute-options"></div>
-    </div>
+  <!-- CLOCK PICKER -->
+  <div class="clock" id="clock">
+    <div class="hand" id="hour-hand"></div>
+    <div class="center"></div>
   </div>
+  <input type="range" min="0" max="23" id="hour-range" value="12">
 
-  <div class="picker-group">
-    <div class="custom-select" id="format-select">Format
-      <div class="custom-options" id="format-options"></div>
-    </div>
-  </div>
-
-  <button class="btn" onclick="generateTimestamp()">Générer</button>
-
+  <button onclick="generateTimestamp()">Générer</button>
   <input id="result" type="text" readonly/>
-  <button class="btn" onclick="copyResult()">📋 Copier</button>
 </div>
 
 <div id="toast-container"></div>
 
 <script>
-const daySelect = document.getElementById('day-select');
-const dayOptions = document.getElementById('day-options');
-const monthSelect = document.getElementById('month-select');
-const monthOptions = document.getElementById('month-options');
-const yearSelect = document.getElementById('year-select');
-const yearOptions = document.getElementById('year-options');
-const hourSelect = document.getElementById('hour-select');
-const hourOptions = document.getElementById('hour-options');
-const minuteSelect = document.getElementById('minute-select');
-const minuteOptions = document.getElementById('minute-options');
-const formatSelect = document.getElementById('format-select');
-const formatOptions = document.getElementById('format-options');
+let selectedDate = new Date();
+const calendarEl = document.getElementById('calendar');
+const monthYearEl = document.getElementById('month-year');
+const hourHand = document.getElementById('hour-hand');
+const hourRange = document.getElementById('hour-range');
 
-// Générer options dynamiques
-for(let i=1;i<=31;i++){dayOptions.innerHTML += `<div>${i}</div>`;}
-for(let i=1;i<=12;i++){monthOptions.innerHTML += `<div>${i}</div>`;}
-const currentYear = new Date().getFullYear();
-for(let i=currentYear;i<=currentYear+5;i++){yearOptions.innerHTML += `<div>${i}</div>`;}
-for(let i=0;i<24;i++){hourOptions.innerHTML += `<div>${i.toString().padStart(2,'0')}</div>`;}
-for(let i=0;i<60;i++){minuteOptions.innerHTML += `<div>${i.toString().padStart(2,'0')}</div>`;}
-const formats = ['t','T','d','D','f','F','R'];
-formats.forEach(f=>formatOptions.innerHTML += `<div>${f}</div>`);
+function renderCalendar() {
+  calendarEl.innerHTML = '';
+  const year = selectedDate.getFullYear();
+  const month = selectedDate.getMonth();
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month+1,0).getDate();
+  monthYearEl.textContent = selectedDate.toLocaleString('default',{month:'long'}) + ' ' + year;
 
-// Toggle dropdowns
-function toggleOptions(select, options){
-  options.style.display = options.style.display==='block'?'none':'block';
+  for(let i=0;i<firstDay;i++){calendarEl.innerHTML += '<div></div>';}
+  for(let d=1; d<=daysInMonth; d++){
+    const div = document.createElement('div');
+    div.textContent = d;
+    if(d===selectedDate.getDate()) div.classList.add('selected');
+    div.addEventListener('click',()=>{selectedDate.setDate(d); renderCalendar();});
+    calendarEl.appendChild(div);
+  }
 }
 
-document.querySelectorAll('.custom-select').forEach(select=>{
-  select.addEventListener('click', e=>{
-    e.stopPropagation();
-    toggleOptions(select, select.querySelector('.custom-options'));
-  });
+document.getElementById('prev-month').addEventListener('click',()=>{selectedDate.setMonth(selectedDate.getMonth()-1); renderCalendar();});
+document.getElementById('next-month').addEventListener('click',()=>{selectedDate.setMonth(selectedDate.getMonth()+1); renderCalendar();});
+renderCalendar();
+
+hourRange.addEventListener('input',(e)=>{
+  const hour = e.target.value;
+  hourHand.style.transform = `rotate(${hour*15}deg) translateY(-50%)`; // simple rotation pour visuel
 });
 
-// Sélection d'une option
-document.querySelectorAll('.custom-options').forEach(options=>{
-  options.querySelectorAll('div').forEach(opt=>{
-    opt.addEventListener('click', e=>{
-      const parent = options.parentElement;
-      parent.firstChild.textContent = e.target.textContent;
-      options.style.display = 'none';
-    });
-  });
-});
-
-document.addEventListener('click', ()=>{document.querySelectorAll('.custom-options').forEach(o=>o.style.display='none');});
-
-// Générer timestamp
 function generateTimestamp(){
-  const day = parseInt(daySelect.firstChild.textContent);
-  const month = parseInt(monthSelect.firstChild.textContent);
-  const year = parseInt(yearSelect.firstChild.textContent);
-  const hour = parseInt(hourSelect.firstChild.textContent);
-  const minute = parseInt(minuteSelect.firstChild.textContent);
-  const format = formatSelect.firstChild.textContent;
-
-  if(!day || !month || !year || isNaN(hour) || isNaN(minute) || !format){
-    showToast("Veuillez remplir tous les champs !");
-    return;
-  }
-
-  const dateObj = new Date(year, month-1, day, hour, minute);
-  const unix = Math.floor(dateObj.getTime()/1000);
-  document.getElementById('result').value = `<t:${unix}:${format}>`;
+  const date = new Date(selectedDate);
+  date.setHours(hourRange.value);
+  date.setMinutes(0);
+  const unix = Math.floor(date.getTime()/1000);
+  document.getElementById('result').value = `<t:${unix}:f>`;
   showToast("Timestamp généré !");
 }
 
-function copyResult(){
-  const result = document.getElementById('result');
-  result.select();
-  navigator.clipboard.writeText(result.value);
-  showToast("Timestamp copié !");
-}
-
-// Toast
 function showToast(message){
   const container = document.getElementById('toast-container');
   const toast = document.createElement('div');
-  toast.className = 'toast show';
+  toast.className='toast show';
   toast.textContent = message;
-
-  const progress = document.createElement('div');
-  progress.className = 'progress';
-  toast.appendChild(progress);
-
+  const progress=document.createElement('div'); progress.className='progress'; toast.appendChild(progress);
   container.appendChild(toast);
   setTimeout(()=>{toast.classList.remove('show'); setTimeout(()=>toast.remove(),300);},5000);
 }
