@@ -6,20 +6,62 @@
 <title>Discord Timestamp Generator</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
-  /* Conteneur de tous les toasts */
+  /* Global gradient background */
+  body {
+    background: linear-gradient(135deg, #1f1f2e, #2a2a3f, #1f1f2e);
+  }
+
+  /* Styled container */
+  .container {
+    background: linear-gradient(145deg, #2b2b3f, #3a3a57);
+    padding: 2rem;
+    border-radius: 1.5rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  }
+
+  /* Inputs / select style */
+  input, select {
+    background: linear-gradient(135deg, #3b3b55, #4b4b72);
+    border: none;
+    outline: none;
+    color: white;
+    padding: 0.5rem;
+    border-radius: 0.75rem;
+    transition: all 0.3s ease;
+  }
+  input:focus, select:focus {
+    background: linear-gradient(135deg, #5a5ac0, #7b7bd0);
+    box-shadow: 0 0 10px rgba(123,123,208,0.7);
+  }
+
+  /* Buttons gradient */
+  .btn-gradient {
+    background: linear-gradient(90deg, #ff6a88, #ff99ac);
+    color: white;
+    font-weight: bold;
+    padding: 0.5rem 1rem;
+    border-radius: 0.75rem;
+    transition: all 0.3s ease;
+  }
+  .btn-gradient:hover {
+    background: linear-gradient(90deg, #ff99ac, #ff6a88);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255,105,136,0.5);
+  }
+
+  /* Toast container */
   #toast-container {
     position: fixed;
     bottom: 2rem;
     right: 2rem;
     display: flex;
-    flex-direction: column-reverse; /* le nouveau toast en bas */
+    flex-direction: column-reverse;
     gap: 0.5rem;
     z-index: 1000;
   }
 
-  /* Toast individuel */
   .toast {
-    background-color: #22c55e;
+    background: linear-gradient(90deg, #22c55e, #4ade80);
     color: white;
     padding: 1rem 1.5rem;
     border-radius: 0.75rem;
@@ -31,16 +73,12 @@
     transition: opacity 0.3s ease, transform 0.3s ease;
     position: relative;
     overflow: hidden;
-    min-width: 200px;
+    min-width: 220px;
   }
-
-  /* Toast visible */
   .toast.show {
     opacity: 1;
     transform: translateY(0);
   }
-
-  /* Barre de progression */
   .toast .progress {
     position: absolute;
     bottom: 0;
@@ -51,26 +89,25 @@
     transform-origin: right;
     animation: shrink 5s linear forwards;
   }
-
   @keyframes shrink {
     from { transform: scaleX(1); }
     to { transform: scaleX(0); }
   }
 </style>
 </head>
-<body class="bg-gray-900 text-white flex items-center justify-center min-h-screen">
+<body class="flex items-center justify-center min-h-screen text-white">
 
-<div class="bg-gray-800 p-6 rounded-2xl shadow-xl w-full max-w-md">
-  <h1 class="text-2xl font-bold mb-4 text-center">⏱ Discord Timestamp</h1>
+<div class="container w-full max-w-md">
+  <h1 class="text-2xl font-bold mb-6 text-center">⏱ Discord Timestamp</h1>
 
   <label class="block mb-2">Choisir la date :</label>
-  <input id="date" type="date" class="w-full mb-4 p-2 rounded bg-gray-700 focus:outline-none"/>
+  <input id="date" type="date" class="w-full mb-4"/>
 
   <label class="block mb-2">Choisir l'heure :</label>
-  <input id="time" type="time" class="w-full mb-4 p-2 rounded bg-gray-700 focus:outline-none"/>
+  <input id="time" type="time" class="w-full mb-4"/>
 
   <label class="block mb-2">Format :</label>
-  <select id="format" class="w-full mb-4 p-2 rounded bg-gray-700 focus:outline-none">
+  <select id="format" class="w-full mb-4">
     <option value="t">Court temps (t)</option>
     <option value="T">Long temps (T)</option>
     <option value="d">Date courte (d)</option>
@@ -80,13 +117,12 @@
     <option value="R">Relatif (R)</option>
   </select>
 
-  <button onclick="generateTimestamp()" class="w-full bg-blue-600 py-2 rounded hover:bg-blue-700 mb-4">Générer</button>
+  <button onclick="generateTimestamp()" class="w-full btn-gradient mb-4">Générer</button>
 
-  <input id="result" type="text" readonly class="w-full p-2 rounded bg-gray-700 focus:outline-none text-center font-mono"/>
-  <button onclick="copyResult()" class="w-full bg-green-600 py-2 rounded hover:bg-green-700 mt-2">📋 Copier</button>
+  <input id="result" type="text" readonly class="w-full p-2 rounded bg-gray-700 focus:outline-none text-center font-mono mb-2"/>
+  <button onclick="copyResult()" class="w-full btn-gradient">📋 Copier</button>
 </div>
 
-<!-- Conteneur pour les toasts -->
 <div id="toast-container"></div>
 
 <script>
@@ -117,7 +153,6 @@
 
   function showToast(message) {
     const container = document.getElementById('toast-container');
-
     const toast = document.createElement('div');
     toast.className = 'toast show';
     toast.textContent = message;
@@ -128,10 +163,9 @@
 
     container.appendChild(toast);
 
-    // Supprimer le toast après 5 secondes
     setTimeout(() => {
       toast.classList.remove('show');
-      setTimeout(() => toast.remove(), 300); // attendre la transition de disparition
+      setTimeout(() => toast.remove(), 300);
     }, 5000);
   }
 </script>
