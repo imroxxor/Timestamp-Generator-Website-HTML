@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Créateur de Timestamps</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-white min-h-screen flex items-center justify-center">
+  <div class="bg-gray-800 p-6 rounded-2xl shadow-xl w-full max-w-xl">
+    <h1 class="text-2xl font-bold mb-4">🎬 Créateur de timestamps</h1>
+
+    <div class="flex gap-2 mb-4">
+      <input id="time" type="text" placeholder="00:00" class="flex-1 p-2 rounded bg-gray-700 focus:outline-none" />
+      <input id="label" type="text" placeholder="Introduction" class="flex-1 p-2 rounded bg-gray-700 focus:outline-none" />
+      <button onclick="addTimestamp()" class="bg-blue-600 px-4 rounded hover:bg-blue-700">Ajouter</button>
+    </div>
+
+    <ul id="list" class="space-y-2 mb-4"></ul>
+
+    <button onclick="copyAll()" class="w-full bg-green-600 py-2 rounded hover:bg-green-700">📋 Copier tous les timestamps</button>
+  </div>
+
+  <script>
+    const list = document.getElementById('list');
+
+    function addTimestamp() {
+      const time = document.getElementById('time').value.trim();
+      const label = document.getElementById('label').value.trim();
+      if (!time || !label) return;
+
+      const li = document.createElement('li');
+      li.className = 'bg-gray-700 p-2 rounded flex justify-between items-center';
+      li.textContent = `${time} - ${label}`;
+
+      const remove = document.createElement('button');
+      remove.textContent = '❌';
+      remove.onclick = () => li.remove();
+
+      li.appendChild(remove);
+      list.appendChild(li);
+
+      document.getElementById('time').value = '';
+      document.getElementById('label').value = '';
+    }
+
+    function copyAll() {
+      const text = [...list.children].map(li => li.firstChild.textContent).join('\n');
+      navigator.clipboard.writeText(text);
+      alert('Timestamps copiés !');
+    }
+  </script>
+</body>
+</html>
