@@ -5,19 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Discord Timestamp Generator</title>
 <style>
-  /* --- VARIABLES CSS POUR FACILITER LE STYLE --- */
   :root {
     --primary-bg: linear-gradient(145deg, #2b2b3f, #3a3a57);
     --body-bg: linear-gradient(135deg, #1f1f2e, #2a2a3f, #1f1f2e);
-    --input-bg: linear-gradient(135deg, #3b3b55, #4b4b72);
-    --input-focus-bg: linear-gradient(135deg, #5a5ac0, #7b7bd0);
     --button-bg: linear-gradient(90deg, #ff6a88, #ff99ac);
     --button-hover-bg: linear-gradient(90deg, #ff99ac, #ff6a88);
     --toast-bg: linear-gradient(90deg, #22c55e, #4ade80);
     --font-main: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   }
 
-  /* --- BODY & CONTAINER --- */
   body {
     margin: 0;
     font-family: var(--font-main);
@@ -44,26 +40,47 @@
     margin-bottom: 1.5rem;
   }
 
-  /* --- INPUTS & SELECT --- */
-  input, select {
-    width: 100%;
-    padding: 0.5rem;
-    border-radius: 0.75rem;
-    border: none;
-    outline: none;
-    background: var(--input-bg);
-    color: white;
+  .picker-group {
+    display: flex;
+    gap: 0.5rem;
     margin-bottom: 1rem;
-    transition: all 0.3s ease;
-    font-size: 1rem;
   }
 
-  input:focus, select:focus {
-    background: var(--input-focus-bg);
-    box-shadow: 0 0 10px rgba(123,123,208,0.7);
+  .custom-select {
+    flex: 1;
+    background: #3b3b55;
+    border-radius: 0.75rem;
+    padding: 0.5rem;
+    color: white;
+    cursor: pointer;
+    position: relative;
+    user-select: none;
   }
 
-  /* --- BUTTONS --- */
+  .custom-select:hover { background: #4b4b72; }
+
+  .custom-options {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: #3b3b55;
+    border-radius: 0.75rem;
+    max-height: 150px;
+    overflow-y: auto;
+    display: none;
+    z-index: 10;
+    margin-top: 2px;
+  }
+
+  .custom-options div {
+    padding: 0.5rem;
+    cursor: pointer;
+  }
+  .custom-options div:hover {
+    background: #5a5ac0;
+  }
+
   .btn {
     width: 100%;
     padding: 0.6rem 1rem;
@@ -77,19 +94,19 @@
     transition: all 0.3s ease;
     margin-bottom: 1rem;
   }
-
   .btn:hover {
     background: var(--button-hover-bg);
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(255,105,136,0.5);
   }
 
-  /* --- RESULT INPUT --- */
   #result {
     text-align: center;
     font-family: monospace;
     margin-bottom: 1rem;
-    background: var(--input-bg);
+    background: #3b3b55;
+    padding: 0.5rem;
+    border-radius: 0.75rem;
   }
 
   /* --- TOASTS --- */
@@ -143,58 +160,119 @@
 <div class="container">
   <h1>⏱ Discord Timestamp</h1>
 
-  <label>Choisir la date :</label>
-  <input id="date" type="date"/>
+  <div class="picker-group">
+    <div class="custom-select" id="day-select">Jour
+      <div class="custom-options" id="day-options"></div>
+    </div>
+    <div class="custom-select" id="month-select">Mois
+      <div class="custom-options" id="month-options"></div>
+    </div>
+    <div class="custom-select" id="year-select">Année
+      <div class="custom-options" id="year-options"></div>
+    </div>
+  </div>
 
-  <label>Choisir l'heure :</label>
-  <input id="time" type="time"/>
+  <div class="picker-group">
+    <div class="custom-select" id="hour-select">Heure
+      <div class="custom-options" id="hour-options"></div>
+    </div>
+    <div class="custom-select" id="minute-select">Minute
+      <div class="custom-options" id="minute-options"></div>
+    </div>
+  </div>
 
-  <label>Format :</label>
-  <select id="format">
-    <option value="t">Court temps (t)</option>
-    <option value="T">Long temps (T)</option>
-    <option value="d">Date courte (d)</option>
-    <option value="D">Date longue (D)</option>
-    <option value="f" selected>Date + temps complet (f)</option>
-    <option value="F">Date + temps complet long (F)</option>
-    <option value="R">Relatif (R)</option>
-  </select>
+  <div class="picker-group">
+    <div class="custom-select" id="format-select">Format
+      <div class="custom-options" id="format-options"></div>
+    </div>
+  </div>
 
-  <button onclick="generateTimestamp()" class="btn">Générer</button>
+  <button class="btn" onclick="generateTimestamp()">Générer</button>
 
   <input id="result" type="text" readonly/>
-  <button onclick="copyResult()" class="btn">📋 Copier</button>
+  <button class="btn" onclick="copyResult()">📋 Copier</button>
 </div>
 
 <div id="toast-container"></div>
 
 <script>
-function generateTimestamp() {
-  const date = document.getElementById('date').value;
-  const time = document.getElementById('time').value;
-  const format = document.getElementById('format').value;
+const daySelect = document.getElementById('day-select');
+const dayOptions = document.getElementById('day-options');
+const monthSelect = document.getElementById('month-select');
+const monthOptions = document.getElementById('month-options');
+const yearSelect = document.getElementById('year-select');
+const yearOptions = document.getElementById('year-options');
+const hourSelect = document.getElementById('hour-select');
+const hourOptions = document.getElementById('hour-options');
+const minuteSelect = document.getElementById('minute-select');
+const minuteOptions = document.getElementById('minute-options');
+const formatSelect = document.getElementById('format-select');
+const formatOptions = document.getElementById('format-options');
 
-  if (!date || !time) {
-    showToast("Veuillez choisir la date et l'heure !");
+// Générer options dynamiques
+for(let i=1;i<=31;i++){dayOptions.innerHTML += `<div>${i}</div>`;}
+for(let i=1;i<=12;i++){monthOptions.innerHTML += `<div>${i}</div>`;}
+const currentYear = new Date().getFullYear();
+for(let i=currentYear;i<=currentYear+5;i++){yearOptions.innerHTML += `<div>${i}</div>`;}
+for(let i=0;i<24;i++){hourOptions.innerHTML += `<div>${i.toString().padStart(2,'0')}</div>`;}
+for(let i=0;i<60;i++){minuteOptions.innerHTML += `<div>${i.toString().padStart(2,'0')}</div>`;}
+const formats = ['t','T','d','D','f','F','R'];
+formats.forEach(f=>formatOptions.innerHTML += `<div>${f}</div>`);
+
+// Toggle dropdowns
+function toggleOptions(select, options){
+  options.style.display = options.style.display==='block'?'none':'block';
+}
+
+document.querySelectorAll('.custom-select').forEach(select=>{
+  select.addEventListener('click', e=>{
+    e.stopPropagation();
+    toggleOptions(select, select.querySelector('.custom-options'));
+  });
+});
+
+// Sélection d'une option
+document.querySelectorAll('.custom-options').forEach(options=>{
+  options.querySelectorAll('div').forEach(opt=>{
+    opt.addEventListener('click', e=>{
+      const parent = options.parentElement;
+      parent.firstChild.textContent = e.target.textContent;
+      options.style.display = 'none';
+    });
+  });
+});
+
+document.addEventListener('click', ()=>{document.querySelectorAll('.custom-options').forEach(o=>o.style.display='none');});
+
+// Générer timestamp
+function generateTimestamp(){
+  const day = parseInt(daySelect.firstChild.textContent);
+  const month = parseInt(monthSelect.firstChild.textContent);
+  const year = parseInt(yearSelect.firstChild.textContent);
+  const hour = parseInt(hourSelect.firstChild.textContent);
+  const minute = parseInt(minuteSelect.firstChild.textContent);
+  const format = formatSelect.firstChild.textContent;
+
+  if(!day || !month || !year || isNaN(hour) || isNaN(minute) || !format){
+    showToast("Veuillez remplir tous les champs !");
     return;
   }
 
-  const datetimeStr = `${date}T${time}:00`;
-  const unixTimestamp = Math.floor(new Date(datetimeStr).getTime() / 1000);
-  const discordTimestamp = `<t:${unixTimestamp}:${format}>`;
-  document.getElementById('result').value = discordTimestamp;
-
+  const dateObj = new Date(year, month-1, day, hour, minute);
+  const unix = Math.floor(dateObj.getTime()/1000);
+  document.getElementById('result').value = `<t:${unix}:${format}>`;
   showToast("Timestamp généré !");
 }
 
-function copyResult() {
+function copyResult(){
   const result = document.getElementById('result');
   result.select();
   navigator.clipboard.writeText(result.value);
   showToast("Timestamp copié !");
 }
 
-function showToast(message) {
+// Toast
+function showToast(message){
   const container = document.getElementById('toast-container');
   const toast = document.createElement('div');
   toast.className = 'toast show';
@@ -205,11 +283,7 @@ function showToast(message) {
   toast.appendChild(progress);
 
   container.appendChild(toast);
-
-  setTimeout(() => {
-    toast.classList.remove('show');
-    setTimeout(() => toast.remove(), 300);
-  }, 5000);
+  setTimeout(()=>{toast.classList.remove('show'); setTimeout(()=>toast.remove(),300);},5000);
 }
 </script>
 
